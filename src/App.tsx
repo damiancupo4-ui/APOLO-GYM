@@ -97,6 +97,18 @@ function App() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">APOLO GYM</h2>
+          <p className="text-gray-600">Cargando sistema...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Layout currentPage={currentPage} onNavigate={setCurrentPage}>
       {renderCurrentPage()}

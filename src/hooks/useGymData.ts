@@ -1,19 +1,49 @@
 import { useState, useEffect } from 'react';
 import { DatosGimnasio, Socio, Retiro, Gasto, Ingreso } from '../types';
-import { loadData, saveData, calcularEstadoSocio, generarNumeroCarnet, generarNumeroRetiro } from '../utils/localStorage';
+import { loadData, saveData, generarNumeroCarnet, generarNumeroRetiro } from '../utils/localStorage';
 
 export const useGymData = () => {
-  const [data, setData] = useState<DatosGimnasio>(loadData());
+  const [data, setData] = useState<DatosGimnasio>({
+    socios: [],
+    retiros: [],
+    gastos: [],
+    ingresos: [],
+    turnos: [],
+    contadores: {
+      carnet: 1,
+      retiro: 1,
+    },
+  });
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Cargar datos al inicializar
   useEffect(() => {
-    saveData(data);
+    const initializeData = async () => {
+      try {
+        const loadedData = await loadData();
+        setData(loadedData);
+      } catch (error) {
+        console.error('Error inicializando datos:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeData();
+  }, []);
+
+  // Guardar datos cuando cambien
+  useEffect(() => {
+    if (!isLoading) {
+      saveData(data);
+    }
   }, [data]);
 
   const addSocio = (socioData: Omit<Socio, 'id' | 'carnet' | 'estado'>) => {
     const nuevoSocio: Socio = {
       id: crypto.randomUUID(),
       carnet: generarNumeroCarnet(data.contadores.carnet),
-      estado: calcularEstadoSocio(socioData.fechaInicio),
+      estado: 'vigente', // Se calculará automáticamente al cargar
       ...socioData,
     };
 
@@ -103,6 +133,7 @@ export const useGymData = () => {
 
   return {
     data,
+    isLoading,
     addSocio,
     addIngreso,
     addRetiro,
